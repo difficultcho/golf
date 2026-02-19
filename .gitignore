@@ -1,0 +1,24 @@
+# Claude Code
+.claude/
+
+# macOS
+.DS_Store
+
+# WeChat DevTools
+project.private.config.json
+miniprogram_npm/
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python (backend has its own .gitignore, but also cover root)
+__pycache__/
+*.py[cod]
+venv/
+
+# Logs
+*.log

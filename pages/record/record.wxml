@@ -1,0 +1,45 @@
+<!--record.wxml-->
+<navigation-bar title="录制视频" back="{{true}}" color="black" background="#FFF"></navigation-bar>
+<scroll-view class="scrollarea" scroll-y type="list">
+  <view class="container">
+    <!-- Camera preview (before recording or during recording) -->
+    <camera
+      wx:if="{{!videoPath}}"
+      class="camera"
+      device-position="back"
+      flash="off"
+      mode="video"
+    ></camera>
+
+    <!-- Video preview (after recording) -->
+    <video
+      wx:if="{{videoPath}}"
+      class="video-preview"
+      src="{{videoPath}}"
+      controls
+      enable-play-gesture
+    ></video>
+
+    <!-- Controls -->
+    <view class="controls">
+      <!-- Start recording button -->
+      <button
+        wx:if="{{!videoPath && !recording}}"
+        class="btn-record"
+        bindtap="startRecord"
+      >开始录制</button>
+
+      <!-- Stop recording button with timer -->
+      <view wx:if="{{recording}}" class="recording-controls">
+        <text class="timer">{{recordTime}}s / {{maxRecordTime}}s</text>
+        <button class="btn-stop" bindtap="stopRecord">停止录制</button>
+      </view>
+
+      <!-- Action buttons after recording -->
+      <view wx:if="{{videoPath}}" class="action-buttons">
+        <button class="btn-secondary" bindtap="retake">重新录制</button>
+        <button class="btn-primary" bindtap="uploadVideo">上传视频</button>
+      </view>
+    </view>
+  </view>
+</scroll-view>

@@ -1,0 +1,26 @@
+# Web Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Deep Learning & Computer Vision
+# torch is installed separately in Dockerfile via PyTorch CPU wheel index
+
+# Pose Estimation
+mediapipe>=0.10.21
+pycparser==2.22  # pin to avoid pycparser 3.0 hash mismatch on PyPI
+idna==3.10       # pin to avoid idna 3.11 hash mismatch on PyPI
+
+# Physics Simulation
+mujoco>=3.0.0
+
+# Numerical Computing
+numpy>=1.24.0,<2.0.0
+scipy>=1.11.0
+
+# Visualization
+matplotlib>=3.7.0
+imageio>=2.0.0
+imageio-ffmpeg>=0.4.0

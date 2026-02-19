@@ -1,0 +1,74 @@
+/**upload.wxss**/
+page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.scrollarea {
+  flex: 1;
+  overflow-y: hidden;
+}
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60rpx;
+  box-sizing: border-box;
+}
+
+.upload-status {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 80rpx;
+}
+
+.status-icon {
+  font-size: 120rpx;
+  margin-bottom: 40rpx;
+}
+
+.icon-uploading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.status-text {
+  display: block;
+  font-size: 32rpx;
+  color: #333;
+  margin-bottom: 40rpx;
+}
+
+.progress-container {
+  width: 100%;
+  padding: 0 40rpx;
+  box-sizing: border-box;
+}
+
+.btn-primary {
+  width: 500rpx;
+  height: 90rpx;
+  line-height: 90rpx;
+  background-color: #07c160;
+  color: white;
+  border-radius: 45rpx;
+  font-size: 32rpx;
+  text-align: center;
+  border: none;
+}
+
+.btn-primary:active {
+  background-color: #06ad56;
+}

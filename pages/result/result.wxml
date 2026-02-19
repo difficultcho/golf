@@ -1,0 +1,173 @@
+<!--result.wxml-->
+<navigation-bar title="处理结果" back="{{true}}" color="black" background="#FFF"></navigation-bar>
+<scroll-view class="scrollarea" scroll-y type="list">
+  <view class="container">
+    <!-- Video player -->
+    <view class="video-container">
+      <video
+        class="result-video"
+        src="{{videoUrl}}"
+        controls
+        enable-play-gesture
+        show-center-play-btn
+        autoplay
+        binderror="onVideoError"
+        bindloadedmetadata="onVideoLoaded"
+      ></video>
+
+      <!-- Loading indicator -->
+      <view class="video-loading" wx:if="{{videoLoading}}">
+        <text>视频加载中...</text>
+      </view>
+
+      <!-- Error message -->
+      <view class="video-error" wx:if="{{videoError}}">
+        <text class="error-text">{{videoError}}</text>
+        <text class="error-hint">提示：请检查开发者工具是否开启"不校验合法域名"</text>
+      </view>
+    </view>
+
+    <!-- Tab bar -->
+    <view class="tab-bar">
+      <view class="tab-item {{activeTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-tab="0">
+        <text>概览</text>
+        <view class="tab-indicator" wx:if="{{activeTab === 0}}"></view>
+      </view>
+      <view class="tab-item {{activeTab === 1 ? 'active' : ''}}" bindtap="switchTab" data-tab="1">
+        <text>图表</text>
+        <view class="tab-indicator" wx:if="{{activeTab === 1}}"></view>
+      </view>
+      <view class="tab-item {{activeTab === 2 ? 'active' : ''}}" bindtap="switchTab" data-tab="2">
+        <text>详情</text>
+        <view class="tab-indicator" wx:if="{{activeTab === 2}}"></view>
+      </view>
+    </view>
+
+    <!-- Tab 0: Overview -->
+    <view class="tab-content" wx:if="{{activeTab === 0}}">
+      <view class="analysis" wx:if="{{metadata.club_head_speed_mph}}">
+        <view class="metric-cards">
+          <view class="metric-card">
+            <text class="metric-value">{{metadata.club_head_speed_mph}}</text>
+            <text class="metric-unit">mph</text>
+            <text class="metric-label">杆头速度</text>
+          </view>
+
+          <view class="metric-card">
+            <text class="metric-value">{{metadata.x_factor}}</text>
+            <text class="metric-unit">度</text>
+            <text class="metric-label">X-Factor</text>
+          </view>
+
+          <view class="metric-card">
+            <text class="metric-value">{{metadata.balance_score}}</text>
+            <text class="metric-unit">/100</text>
+            <text class="metric-label">平衡得分</text>
+          </view>
+
+          <view class="metric-card">
+            <text class="metric-value">{{metadata.energy_efficiency_pct}}</text>
+            <text class="metric-unit">%</text>
+            <text class="metric-label">能量效率</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="actions">
+        <button class="btn-primary" bindtap="backToHome">完成</button>
+      </view>
+    </view>
+
+    <!-- Tab 1: Charts -->
+    <view class="tab-content" wx:if="{{activeTab === 1}}">
+      <view class="chart-section" wx:if="{{rawMetrics}}">
+        <text class="chart-title">综合能力</text>
+        <view class="chart-container">
+          <canvas type="2d" id="radarCanvas" class="radar-canvas"></canvas>
+        </view>
+
+        <text class="chart-title">关节峰值扭矩</text>
+        <view class="chart-container">
+          <canvas type="2d" id="barCanvas" class="bar-canvas"></canvas>
+        </view>
+      </view>
+      <view class="no-data" wx:else>
+        <text>暂无分析数据</text>
+      </view>
+    </view>
+
+    <!-- Tab 2: Details -->
+    <view class="tab-content" wx:if="{{activeTab === 2}}">
+      <view class="analysis" wx:if="{{metadata.club_head_speed_mph}}">
+        <text class="meta-title">挥杆分析</text>
+
+        <view class="meta-item">
+          <text class="meta-label">杆头速度</text>
+          <text class="meta-value">{{metadata.club_head_speed_mph}} mph</text>
+        </view>
+
+        <view class="meta-item">
+          <text class="meta-label">X-Factor</text>
+          <text class="meta-value">{{metadata.x_factor}}度</text>
+        </view>
+
+        <view class="meta-item">
+          <text class="meta-label">平衡得分</text>
+          <text class="meta-value">{{metadata.balance_score}}/100</text>
+        </view>
+
+        <view class="meta-item">
+          <text class="meta-label">能量效率</text>
+          <text class="meta-value">{{metadata.energy_efficiency_pct}}%</text>
+        </view>
+
+        <view class="meta-item">
+          <text class="meta-label">挥杆时长</text>
+          <text class="meta-value">{{metadata.swing_duration_sec}}秒</text>
+        </view>
+
+        <view class="meta-item">
+          <text class="meta-label">肩关节峰值扭矩</text>
+          <text class="meta-value">{{metadata.peak_torques.shoulder}} Nm</text>
+        </view>
+
+        <view class="meta-item">
+          <text class="meta-label">髋关节峰值扭矩</text>
+          <text class="meta-value">{{metadata.peak_torques.hip}} Nm</text>
+        </view>
+
+        <view class="meta-item">
+          <text class="meta-label">膝关节峰值扭矩</text>
+          <text class="meta-value">{{metadata.peak_torques.knee}} Nm</text>
+        </view>
+      </view>
+
+      <!-- Video Info -->
+      <view class="metadata" wx:if="{{metadata}}">
+        <text class="meta-title">视频信息</text>
+
+        <view class="meta-item">
+          <text class="meta-label">时长</text>
+          <text class="meta-value">{{metadata.duration}}秒</text>
+        </view>
+
+        <view class="meta-item">
+          <text class="meta-label">帧数</text>
+          <text class="meta-value">{{metadata.frame_count}}</text>
+        </view>
+
+        <view class="meta-item">
+          <text class="meta-label">处理耗时</text>
+          <text class="meta-value">{{metadata.processing_time}}秒</text>
+        </view>
+      </view>
+
+      <!-- Action buttons -->
+      <view class="actions">
+        <button class="btn-secondary" bindtap="downloadVideo">保存视频</button>
+        <button class="btn-secondary" bindtap="downloadData">查看数据</button>
+        <button class="btn-primary" bindtap="backToHome">完成</button>
+      </view>
+    </view>
+  </view>
+</scroll-view>

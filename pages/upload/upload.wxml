@@ -1,0 +1,40 @@
+<!--upload.wxml-->
+<navigation-bar title="上传处理" back="{{true}}" color="black" background="#FFF"></navigation-bar>
+<scroll-view class="scrollarea" scroll-y type="list">
+  <view class="container">
+    <view class="upload-status">
+      <view class="status-icon">
+        <text wx:if="{{!failed && !success}}" class="icon-uploading">📤</text>
+        <text wx:if="{{success}}" class="icon-success">✅</text>
+        <text wx:if="{{failed}}" class="icon-failed">❌</text>
+      </view>
+
+      <text class="status-text">{{statusText}}</text>
+
+      <!-- Progress bar -->
+      <view wx:if="{{!failed && !success}}" class="progress-container">
+        <progress
+          percent="{{uploadProgress}}"
+          show-info
+          stroke-width="8"
+          activeColor="#07c160"
+          backgroundColor="#f0f0f0"
+        />
+      </view>
+    </view>
+
+    <!-- Retry button on failure -->
+    <button
+      wx:if="{{failed}}"
+      class="btn-primary"
+      bindtap="retryUpload"
+    >重试上传</button>
+
+    <!-- View result button on success -->
+    <button
+      wx:if="{{success}}"
+      class="btn-primary"
+      bindtap="viewResult"
+    >查看结果</button>
+  </view>
+</scroll-view>

@@ -1,0 +1,16 @@
+<!--index.wxml-->
+<navigation-bar title="视频处理" back="{{false}}" color="black" background="#FFF"></navigation-bar>
+<scroll-view class="scrollarea" scroll-y type="list">
+  <view class="container">
+    <view class="welcome">
+      <text class="title">视频处理系统</text>
+      <text class="subtitle">录制视频并进行AI处理</text>
+    </view>
+    <button class="btn-primary" bindtap="navigateToRecord">
+      开始录制
+    </button>
+    <button class="btn-secondary" bindtap="chooseLocalVideo">
+      选择本地视频
+    </button>
+  </view>
+</scroll-view>
