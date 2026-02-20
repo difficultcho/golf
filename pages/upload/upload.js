@@ -8,7 +8,8 @@ Page({
     statusText: '准备上传...',
     videoId: '',
     success: false,
-    failed: false
+    failed: false,
+    step: 0  // 0=uploading, 1=processing, 2=done, -1=error
   },
 
   onLoad(options) {
@@ -45,7 +46,8 @@ Page({
       uploadProgress: 0,
       statusText: '正在上传...',
       failed: false,
-      success: false
+      success: false,
+      step: 0
     })
 
     const uploadTask = wx.uploadFile({
@@ -66,8 +68,9 @@ Page({
 
             this.setData({
               videoId: data.video_id,
-              statusText: '上传完成，AI正在分析...',
-              uploadProgress: 100
+              statusText: 'AI 正在分析挥杆动作...',
+              uploadProgress: 100,
+              step: 1
             })
             console.log('Starting pollStatus...')
             // Start polling status
@@ -122,10 +125,10 @@ Page({
 
             if (status === 'done') {
               console.log('=== Processing DONE ===')
-              console.log('Setting success state with videoId:', this.data.videoId)
               this.setData({
                 success: true,
-                statusText: '处理完成！'
+                statusText: '分析完成！',
+                step: 2
               })
               console.log('Success state set, data:', this.data)
             } else if (status === 'failed') {
@@ -161,7 +164,8 @@ Page({
     console.error('Error message:', message)
     this.setData({
       failed: true,
-      statusText: message
+      statusText: message,
+      step: -1
     })
     wx.showToast({
       title: message,

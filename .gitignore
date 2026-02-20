@@ -22,3 +22,6 @@ venv/
 
 # Logs
 *.log
+
+# Figma design export (not part of the app)
+design/

@@ -1,40 +1,74 @@
 <!--upload.wxml-->
-<navigation-bar title="上传处理" back="{{true}}" color="black" background="#FFF"></navigation-bar>
-<scroll-view class="scrollarea" scroll-y type="list">
-  <view class="container">
-    <view class="upload-status">
-      <view class="status-icon">
-        <text wx:if="{{!failed && !success}}" class="icon-uploading">📤</text>
-        <text wx:if="{{success}}" class="icon-success">✅</text>
-        <text wx:if="{{failed}}" class="icon-failed">❌</text>
-      </view>
+<navigation-bar title="上传分析" back="{{true}}" color="white" background="#0a2540"></navigation-bar>
+<view class="page">
 
-      <text class="status-text">{{statusText}}</text>
-
-      <!-- Progress bar -->
-      <view wx:if="{{!failed && !success}}" class="progress-container">
-        <progress
-          percent="{{uploadProgress}}"
-          show-info
-          stroke-width="8"
-          activeColor="#07c160"
-          backgroundColor="#f0f0f0"
-        />
+  <!-- Step indicator -->
+  <view class="steps">
+    <view class="step {{step >= 0 ? 'active' : ''}} {{step > 0 ? 'done' : ''}}">
+      <view class="step-circle">
+        <text wx:if="{{step > 0}}" class="step-check">✓</text>
+        <text wx:else class="step-num">1</text>
       </view>
+      <text class="step-label">上传</text>
+    </view>
+    <view class="step-line {{step >= 1 ? 'active' : ''}}"></view>
+    <view class="step {{step >= 1 ? 'active' : ''}} {{step > 1 ? 'done' : ''}}">
+      <view class="step-circle">
+        <text wx:if="{{step > 1}}" class="step-check">✓</text>
+        <text wx:else class="step-num">2</text>
+      </view>
+      <text class="step-label">AI 分析</text>
+    </view>
+    <view class="step-line {{step >= 2 ? 'active' : ''}}"></view>
+    <view class="step {{step >= 2 ? 'active' : ''}}">
+      <view class="step-circle">
+        <text class="step-num">3</text>
+      </view>
+      <text class="step-label">完成</text>
+    </view>
+  </view>
+
+  <!-- Main status area -->
+  <view class="status-area">
+
+    <!-- Spinner (uploading or processing) -->
+    <view wx:if="{{!failed && !success}}" class="spinner-wrap">
+      <view class="spinner-ring"></view>
+      <view class="spinner-inner"></view>
     </view>
 
-    <!-- Retry button on failure -->
-    <button
-      wx:if="{{failed}}"
-      class="btn-primary"
-      bindtap="retryUpload"
-    >重试上传</button>
+    <!-- Success icon -->
+    <view wx:if="{{success}}" class="result-icon success-icon">
+      <text class="result-check">✓</text>
+    </view>
 
-    <!-- View result button on success -->
-    <button
-      wx:if="{{success}}"
-      class="btn-primary"
-      bindtap="viewResult"
-    >查看结果</button>
+    <!-- Error icon -->
+    <view wx:if="{{failed}}" class="result-icon error-icon">
+      <text class="result-x">✕</text>
+    </view>
+
+    <!-- Status text -->
+    <text class="status-text">{{statusText}}</text>
+
+    <!-- Progress bar (upload phase only) -->
+    <view wx:if="{{!failed && !success && step === 0}}" class="progress-wrap">
+      <view class="progress-track">
+        <view class="progress-fill" style="width: {{uploadProgress}}%;"></view>
+      </view>
+      <text class="progress-pct">{{uploadProgress}}%</text>
+    </view>
+
+    <!-- Processing hint -->
+    <text wx:if="{{!failed && !success && step === 1}}" class="hint-text">
+      正在运用 AI 模型分析挥杆姿态与生物力学数据，请稍候…
+    </text>
+
   </view>
-</scroll-view>
+
+  <!-- Action buttons -->
+  <view class="action-wrap">
+    <button wx:if="{{failed}}" class="btn-primary" bindtap="retryUpload">重新上传</button>
+    <button wx:if="{{success}}" class="btn-primary" bindtap="viewResult">查看分析结果</button>
+  </view>
+
+</view>

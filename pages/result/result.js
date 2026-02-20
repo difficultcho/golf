@@ -7,6 +7,7 @@ Page({
     videoUrl: '',
     metadata: null,
     rawMetrics: null,
+    suggestions: [],
     videoLoading: true,
     videoError: '',
     activeTab: 0,
@@ -110,7 +111,9 @@ Page({
           if (data.processing_time != null) {
             data.processing_time = parseFloat(data.processing_time).toFixed(2)
           }
-          this.setData({ metadata: data, rawMetrics: rawMetrics })
+          const suggestions = this.generateSuggestions(rawMetrics)
+          this.setData({ metadata: data, rawMetrics, suggestions })
+          this.saveToHistory(videoId, rawMetrics)
         } else {
           wx.showToast({
             title: '元数据加载失败',
@@ -315,6 +318,54 @@ Page({
           ctx.fillText(`${t.value.toFixed(1)} Nm`, paddingLeft + barWidth + 6, y + barHeight / 2)
         })
       })
+  },
+
+  generateSuggestions(raw) {
+    if (!raw) return []
+    const tips = []
+    if (raw.clubHeadSpeed < 80) {
+      tips.push({ level: 'warn', text: '杆头速度偏低，建议加强核心旋转训练与下肢蹬地发力练习' })
+    } else {
+      tips.push({ level: 'good', text: `杆头速度 ${raw.clubHeadSpeed.toFixed(1)} mph，表现良好` })
+    }
+    if (raw.xFactor < 30) {
+      tips.push({ level: 'warn', text: 'X-Factor 偏小，上杆时尝试增大肩部转动、减少髋部旋转' })
+    } else {
+      tips.push({ level: 'good', text: `X-Factor ${raw.xFactor.toFixed(1)}°，肩髋分离度理想` })
+    }
+    if (raw.balanceScore < 70) {
+      tips.push({ level: 'warn', text: '平衡稳定性待提升，注意保持下盘稳固，控制重心转移节奏' })
+    } else {
+      tips.push({ level: 'good', text: `平衡得分 ${raw.balanceScore.toFixed(0)} 分，重心控制稳定` })
+    }
+    if (raw.energyEfficiency < 65) {
+      tips.push({ level: 'warn', text: '动力链传递效率偏低，优化腿→躯干→手臂的顺序发力顺序' })
+    } else {
+      tips.push({ level: 'good', text: `能量传递效率 ${raw.energyEfficiency.toFixed(1)}%，动力链流畅` })
+    }
+    return tips
+  },
+
+  saveToHistory(videoId, rawMetrics) {
+    try {
+      const history = wx.getStorageSync('swingHistory') || []
+      if (history.find(h => h.id === videoId)) return
+      const now = new Date()
+      const dateFormatted = `${now.getMonth() + 1}月${now.getDate()}日 ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+      history.unshift({
+        id: videoId,
+        date: now.toISOString(),
+        dateFormatted,
+        metrics: rawMetrics ? {
+          clubHeadSpeed: rawMetrics.clubHeadSpeed.toFixed(1),
+          balanceScore: rawMetrics.balanceScore.toFixed(0)
+        } : null
+      })
+      if (history.length > 20) history.pop()
+      wx.setStorageSync('swingHistory', history)
+    } catch (e) {
+      console.error('Failed to save history:', e)
+    }
   },
 
   downloadVideo() {

@@ -1,16 +1,116 @@
 <!--index.wxml-->
-<navigation-bar title="视频处理" back="{{false}}" color="black" background="#FFF"></navigation-bar>
-<scroll-view class="scrollarea" scroll-y type="list">
-  <view class="container">
-    <view class="welcome">
-      <text class="title">视频处理系统</text>
-      <text class="subtitle">录制视频并进行AI处理</text>
+<view class="page">
+
+  <!-- ========== HOME TAB ========== -->
+  <view wx:if="{{activeTab === 0}}" class="home-wrap">
+
+    <!-- Brand header (covers status bar + content) -->
+    <view class="brand-header" style="padding-top: {{statusBarHeight}}px;">
+      <view class="brand-logo-mark">G</view>
+      <view class="brand-text-wrap">
+        <text class="brand-name">Golf <text class="brand-ai">AI</text></text>
+        <text class="brand-tagline">你的专属挥杆教练</text>
+      </view>
     </view>
-    <button class="btn-primary" bindtap="navigateToRecord">
-      开始录制
-    </button>
-    <button class="btn-secondary" bindtap="chooseLocalVideo">
-      选择本地视频
-    </button>
+
+    <!-- History list -->
+    <scroll-view class="history-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+      <view class="section-header">
+        <text class="section-title">挥杆记录</text>
+        <text class="section-count" wx:if="{{history.length > 0}}">共 {{history.length}} 次</text>
+      </view>
+
+      <!-- Empty state -->
+      <view wx:if="{{history.length === 0}}" class="empty-state">
+        <text class="empty-icon">⛳</text>
+        <text class="empty-title">暂无挥杆记录</text>
+        <text class="empty-desc">录制或选取视频，AI 将解析你的挥杆动作并提供专业改进建议</text>
+      </view>
+
+      <!-- History cards -->
+      <view
+        wx:for="{{history}}"
+        wx:key="id"
+        class="history-card"
+        bindtap="viewResult"
+        data-id="{{item.id}}"
+      >
+        <view class="card-index-wrap">
+          <text class="card-index">{{history.length - index}}</text>
+        </view>
+        <view class="card-body">
+          <text class="card-date">{{item.dateFormatted}}</text>
+          <view class="card-metrics" wx:if="{{item.metrics}}">
+            <text class="card-metric">{{item.metrics.clubHeadSpeed}} mph</text>
+            <text class="card-sep"> · </text>
+            <text class="card-metric">平衡 {{item.metrics.balanceScore}} 分</text>
+          </view>
+          <text class="card-metric card-no-data" wx:else>分析数据不可用</text>
+        </view>
+        <text class="card-arrow">›</text>
+      </view>
+
+      <view style="height: 24rpx;"></view>
+    </scroll-view>
+
+    <!-- Action bar -->
+    <view class="action-bar">
+      <button class="btn-record" bindtap="startRecord">新录像</button>
+      <button class="btn-album" bindtap="chooseAlbum">从相册选取</button>
+    </view>
+
   </view>
-</scroll-view>
+
+  <!-- ========== PROFILE TAB ========== -->
+  <view wx:if="{{activeTab === 1}}" class="profile-wrap">
+    <view class="profile-hero" style="padding-top: {{statusBarHeight}}px;">
+      <view class="avatar"><text class="avatar-text">G</text></view>
+      <text class="profile-name">高尔夫爱好者</text>
+      <view class="profile-stat-row">
+        <view class="profile-stat">
+          <text class="stat-num">{{history.length}}</text>
+          <text class="stat-label">次分析</text>
+        </view>
+      </view>
+    </view>
+
+    <scroll-view class="profile-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+      <view class="settings-group">
+        <view class="settings-row" bindtap="showAbout">
+          <text class="row-label">关于 Golf AI</text>
+          <text class="row-arrow">›</text>
+        </view>
+        <view class="row-divider"></view>
+        <view class="settings-row" bindtap="sendFeedback">
+          <text class="row-label">意见反馈</text>
+          <text class="row-arrow">›</text>
+        </view>
+      </view>
+
+      <view class="settings-group">
+        <view class="settings-row" bindtap="clearHistory">
+          <text class="row-label danger">清除所有挥杆记录</text>
+          <text class="row-arrow">›</text>
+        </view>
+      </view>
+
+      <view class="version-footer">
+        <text class="version-text">Golf AI  v1.0.0</text>
+        <text class="version-sub">AI 驱动的挥杆分析系统</text>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- ========== BOTTOM TAB BAR ========== -->
+  <view class="bottom-tabs">
+    <view class="bottom-tab {{activeTab === 0 ? 'active' : ''}}" bindtap="switchTab" data-tab="0">
+      <view class="tab-dot {{activeTab === 0 ? 'visible' : ''}}"></view>
+      <text class="tab-label">首页</text>
+    </view>
+    <view class="bottom-tab {{activeTab === 1 ? 'active' : ''}}" bindtap="switchTab" data-tab="1">
+      <view class="tab-dot {{activeTab === 1 ? 'visible' : ''}}"></view>
+      <text class="tab-label">我的</text>
+    </view>
+  </view>
+
+</view>

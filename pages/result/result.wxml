@@ -73,6 +73,19 @@
         </view>
       </view>
 
+      <!-- AI Suggestions -->
+      <view class="suggestions" wx:if="{{suggestions.length > 0}}">
+        <text class="suggestions-title">AI 改进建议</text>
+        <view
+          wx:for="{{suggestions}}"
+          wx:key="index"
+          class="suggestion-item {{item.level}}"
+        >
+          <view class="suggestion-dot"></view>
+          <text class="suggestion-text">{{item.text}}</text>
+        </view>
+      </view>
+
       <view class="actions">
         <button class="btn-primary" bindtap="backToHome">完成</button>
       </view>

@@ -234,6 +234,65 @@ page {
   font-size: 28rpx;
 }
 
+/* AI Suggestions */
+.suggestions {
+  width: 100%;
+  padding: 0 30rpx;
+  box-sizing: border-box;
+  margin-bottom: 40rpx;
+}
+
+.suggestions-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1a1a2a;
+  letter-spacing: 1rpx;
+  margin-bottom: 20rpx;
+  text-transform: uppercase;
+}
+
+.suggestion-item {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16rpx;
+  padding: 20rpx 24rpx;
+  border-radius: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.suggestion-item.good {
+  background-color: #f0faf4;
+}
+
+.suggestion-item.warn {
+  background-color: #fff8f0;
+}
+
+.suggestion-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 6rpx;
+  flex-shrink: 0;
+  margin-top: 8rpx;
+}
+
+.suggestion-item.good .suggestion-dot {
+  background-color: #07c160;
+}
+
+.suggestion-item.warn .suggestion-dot {
+  background-color: #f59e0b;
+}
+
+.suggestion-text {
+  flex: 1;
+  font-size: 26rpx;
+  color: #374151;
+  line-height: 1.6;
+}
+
 /* Action buttons */
 .actions {
   width: 100%;
@@ -245,7 +304,7 @@ page {
 .btn-secondary {
   width: 100%;
   height: 90rpx;
-  line-height: 90rpx;
+  line-height: normal;
   background-color: #fff;
   color: #333;
   border: 2rpx solid #ddd;
@@ -253,6 +312,10 @@ page {
   font-size: 32rpx;
   text-align: center;
   margin-bottom: 20rpx;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-secondary:active {
@@ -262,7 +325,7 @@ page {
 .btn-primary {
   width: 100%;
   height: 90rpx;
-  line-height: 90rpx;
+  line-height: normal;
   background-color: #07c160;
   color: white;
   border-radius: 45rpx;
@@ -270,6 +333,10 @@ page {
   text-align: center;
   border: none;
   margin-top: 20rpx;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-primary:active {
