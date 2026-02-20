@@ -123,6 +123,14 @@ class PoseEstimatorSimple:
         if not MEDIAPIPE_AVAILABLE or not self.mediapipe_ready:
             return self._generate_dummy_pose_data(video_path, output_path)
 
+        # Re-initialize landmarker for each video to reset internal timestamp state.
+        # MediaPipe VIDEO mode requires strictly increasing timestamps; reusing a
+        # landmarker across videos causes the second video (starting at t=0) to be
+        # silently rejected, returning no detections.
+        if self.landmarker is not None:
+            self.landmarker.close()
+        self._init_landmarker(None)
+
         start_time = time.time()
 
         cap = cv2.VideoCapture(str(video_path))
