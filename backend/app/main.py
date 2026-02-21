@@ -6,8 +6,8 @@ from app.routes import video, analysis
 
 app = FastAPI(
     title=settings.APP_NAME,
-    description="AI-Driven Golf Swing Analysis API with PyTorch + MuJoCo backend",
-    version="2.0.0",  # Phase 2A
+    description="AI-Driven Golf Swing Analysis API with PyTorch + MuJoCo backend. Deployed via CI/CD pipeline.",
+    version="2.1.0",  # CI/CD deployment verification
     debug=settings.DEBUG
 )
 
@@ -30,8 +30,8 @@ async def root():
     """Root endpoint - API health check"""
     return {
         "message": "AI-Driven Golf Swing Analysis API",
-        "version": "2.0.0",
-        "phase": "Phase 2A",
+        "version": "2.1.0",
+        "phase": "Phase 2A - CI/CD Deployed",
         "status": "running",
         "features": [
             "3D Pose Estimation (MediaPipe)",

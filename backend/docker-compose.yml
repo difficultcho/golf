@@ -1,0 +1,11 @@
+services:
+  backend:
+    image: ccr.ccs.tencentyun.com/mz_personal_namespace/golf_backend:latest
+    container_name: golf-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - TZ=Asia/Shanghai
