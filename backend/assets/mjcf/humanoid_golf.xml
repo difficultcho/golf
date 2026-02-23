@@ -76,19 +76,21 @@
               <body name="golf_club" pos="0.05 0 -0.1">
                 <joint name="club_grip" type="ball" damping="0.5"/>
 
-                <!-- Club shaft -->
+                <!-- Club shaft (no ground collision — penetrates floor in neutral stance) -->
                 <geom name="club_shaft" type="capsule"
                       fromto="0 0 0 0 0 -1.0"
                       size="0.01"
                       mass="0.3"
-                      rgba="0.3 0.3 0.3 1"/>
+                      rgba="0.3 0.3 0.3 1"
+                      contype="0" conaffinity="0"/>
 
-                <!-- Club head (driver) -->
+                <!-- Club head (driver, no ground collision) -->
                 <body name="club_head_body" pos="0 0.05 -1.0">
                   <geom name="club_head" type="box"
                         size="0.02 0.05 0.03"
                         mass="0.2"
-                        rgba="0.2 0.2 0.2 1"/>
+                        rgba="0.2 0.2 0.2 1"
+                        contype="0" conaffinity="0"/>
                   <site name="club_head_site" pos="0 0 0" size="0.01"/>
                 </body>
               </body>
@@ -164,13 +166,17 @@
       </body>
     </body>
 
-    <!-- Mocap bodies for trajectory tracking (Phase 2A) -->
-    <!-- Uncomment when implementing pose tracking
-    <body name="mocap_pelvis" mocap="true">
+    <!-- Mocap body for pelvis trajectory tracking (must match pelvis initial pos) -->
+    <body name="mocap_pelvis" mocap="true" pos="0 0 1.0">
       <geom type="sphere" size="0.02" rgba="1 0 0 0.3" contype="0" conaffinity="0"/>
     </body>
-    -->
   </worldbody>
+
+  <!-- Equality constraints: weld pelvis to mocap body for balance -->
+  <equality>
+    <weld name="pelvis_track" body1="pelvis" body2="mocap_pelvis"
+          solref="0.01 1" solimp="0.9 0.95 0.001"/>
+  </equality>
 
   <!-- Actuators: torque-controlled motors -->
   <actuator>
