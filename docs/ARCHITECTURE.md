@@ -1,17 +1,16 @@
-# Technical Architecture
+# 技术架构
 
-## System Overview
+## 系统概述
 
-This document describes the technical architecture of the AI-Driven Golf Swing Analysis System, covering both Phase 1 (implemented) and Phase 2 (planned).
+本文档描述 AI 高尔夫挥杆分析系统的技术架构，涵盖 Phase 1（已实现）和 Phase 2（规划中）。
 
-## High-Level Architecture
+## 整体架构
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                     WeChat Mini Program                          │
+│                       微信小程序                                  │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
-│  │  Record  │→ │  Upload  │→ │Processing│→ │  Result  │       │
-│  │   Page   │  │   Page   │  │   Page   │  │   Page   │       │
+│  │  录制页面 │→ │  上传页面 │→ │  处理中   │→ │  结果页面 │       │
 │  └──────────┘  └──────────┘  └──────────┘  └──────────┘       │
 │         │              │              ↓              ↑           │
 └─────────┼──────────────┼──────────────┼──────────────┼──────────┘
@@ -20,241 +19,241 @@ This document describes the technical architecture of the AI-Driven Golf Swing A
           │              │              │ (Phase 2)    │
           ↓              ↓              ↓              │
 ┌─────────────────────────────────────────────────────────────────┐
-│                      FastAPI Backend                             │
+│                      FastAPI 后端                                │
 │  ┌──────────────────────────────────────────────────────────┐  │
-│  │                    API Layer (routes/)                    │  │
+│  │                    API 层 (routes/)                       │  │
 │  │   /video/upload  │  /video/status  │  /analysis/result   │  │
 │  └──────────────────────────────────────────────────────────┘  │
 │                             ↓                                    │
 │  ┌──────────────────────────────────────────────────────────┐  │
-│  │                  Service Layer (services/)                │  │
+│  │                  服务层 (services/)                       │  │
 │  │  VideoService  │  GolfAnalysisService  │  VisualizationSvc│  │
 │  └──────────────────────────────────────────────────────────┘  │
 │                             ↓                                    │
 │  ┌──────────────────────────────────────────────────────────┐  │
-│  │                  Model Layer (models/)                    │  │
+│  │                  模型层 (models/)                         │  │
 │  │  ┌───────────┐  ┌──────────────┐  ┌──────────────────┐  │  │
 │  │  │  Phase 1  │  │   Phase 2A   │  │    Phase 2B      │  │  │
-│  │  │  Dummy    │  │  AI Vision   │  │  RL Optimizer    │  │  │
-│  │  │Processor  │  │   + MuJoCo   │  │                  │  │  │
+│  │  │  Dummy    │  │  AI 视觉     │  │  RL 优化器       │  │  │
+│  │  │  处理器   │  │  + MuJoCo    │  │                  │  │  │
 │  │  └───────────┘  └──────────────┘  └──────────────────┘  │  │
 │  └──────────────────────────────────────────────────────────┘  │
 │                             ↓                                    │
 │  ┌──────────────────────────────────────────────────────────┐  │
-│  │              Storage & Processing Engine                  │  │
-│  │  File System  │  Celery Queue  │  Redis Cache  │  GPU    │  │
+│  │              存储与处理引擎                                │  │
+│  │  文件系统  │  Celery 队列  │  Redis 缓存  │  GPU         │  │
 │  └──────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## Phase 1: Video Processing Pipeline (✅ Implemented)
+## Phase 1：视频处理管线（已实现）
 
-### 1.1 Frontend Flow
+### 1.1 前端流程
 
 ```
-User Action → Camera API → Video Recording → Temp File
-                                                  ↓
-                                          wx.uploadFile()
-                                                  ↓
-                                          Backend /upload
-                                                  ↓
-                                    Poll /status/{video_id}
-                                                  ↓
-                                    Download /result/{video_id}
+用户操作 → 相机 API → 视频录制 → 临时文件
+                                       ↓
+                               wx.uploadFile()
+                                       ↓
+                               后端 /upload
+                                       ↓
+                         轮询 /status/{video_id}
+                                       ↓
+                         下载 /result/{video_id}
 ```
 
-### 1.2 Backend Processing
+### 1.2 后端处理
 
 ```python
-# Video upload → Processing → Storage
+# 视频上传 → 处理 → 存储
 POST /api/video/upload
     ↓
 VideoService.save_upload(video_id, content)
-    → Save to: data/raw_videos/{video_id}.mp4
+    → 保存至: data/raw_videos/{video_id}.mp4
     ↓
 VideoService.process_video(video_id)
     ↓
 DummyVideoProcessor.forward(input_path, output_path)
-    → OpenCV: Add watermark
-    → FFmpeg: Re-encode to H.264+AAC
-    → Save to: data/processed_videos/{video_id}.mp4
+    → OpenCV: 添加水印
+    → FFmpeg: 重新编码为 H.264+AAC
+    → 保存至: data/processed_videos/{video_id}.mp4
     ↓
-Generate metadata JSON
-    → Save to: data/metadata/{video_id}.json
+生成元数据 JSON
+    → 保存至: data/metadata/{video_id}.json
     ↓
-Return: {video_id, status: "done"}
+返回: {video_id, status: "done"}
 ```
 
-### 1.3 Data Flow
+### 1.3 数据流
 
 ```
 ┌─────────────┐
-│  Raw Video  │ → Upload → data/raw_videos/{id}.mp4
+│  原始视频    │ → 上传 → data/raw_videos/{id}.mp4
 └─────────────┘
        ↓
 ┌─────────────┐
-│  Processing │ → OpenCV + FFmpeg
+│  处理阶段    │ → OpenCV + FFmpeg
 └─────────────┘
        ↓
 ┌─────────────────┐
-│ Processed Video │ → data/processed_videos/{id}.mp4
+│  处理后视频      │ → data/processed_videos/{id}.mp4
 └─────────────────┘
        ↓
 ┌─────────────┐
-│  Metadata   │ → data/metadata/{id}.json
+│  元数据      │ → data/metadata/{id}.json
 └─────────────┘
 ```
 
-### 1.4 Key Technologies
+### 1.4 关键技术
 
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| Web Framework | FastAPI | REST API endpoints |
-| Video I/O | OpenCV | Frame reading/writing |
-| Codec | FFmpeg | H.264+AAC encoding |
-| DL Framework | PyTorch | Model foundation (dummy in Phase 1) |
-| Serialization | Pydantic | Data validation |
+| 组件 | 技术 | 用途 |
+|------|------|------|
+| Web 框架 | FastAPI | REST API 端点 |
+| 视频 I/O | OpenCV | 帧读写 |
+| 编解码 | FFmpeg | H.264+AAC 编码 |
+| 深度学习框架 | PyTorch | 模型基础（Phase 1 为 Dummy） |
+| 序列化 | Pydantic | 数据验证 |
 
 ---
 
-## Phase 2: AI + Physics Analysis Pipeline (🚧 Planned)
+## Phase 2：AI + 物理分析管线（规划中）
 
-### 2.1 Analysis Pipeline
+### 2.1 分析管线
 
 ```
-Video Upload
+视频上传
     ↓
 ┌─────────────────────────────────────────────────────┐
-│ Stage 1: AI Video Analysis (30s)                    │
+│ 阶段 1：AI 视频分析（约30秒）                         │
 ├─────────────────────────────────────────────────────┤
-│ 1. 2D Pose Detection (MediaPipe)                     │
-│    → Detect 17 keypoints per frame                  │
+│ 1. 2D 姿态检测（MediaPipe）                           │
+│    → 每帧检测 17 个关键点                              │
 │                                                      │
-│ 2. 3D Pose Lifting (VideoPose3D)                    │
-│    → 2D → 3D trajectory                             │
-│    → Output: (T, 17, 3) joint positions             │
+│ 2. 3D 姿态提升（VideoPose3D）                         │
+│    → 2D → 3D 轨迹                                    │
+│    → 输出: (T, 17, 3) 关节坐标                        │
 │                                                      │
-│ 3. Object Detection (YOLOv8)                        │
-│    → Track golf club trajectory                     │
-│    → Track golf ball (if visible)                   │
+│ 3. 物体检测（YOLOv8）                                 │
+│    → 追踪球杆轨迹                                     │
+│    → 追踪高尔夫球（如可见）                             │
 │                                                      │
-│ 4. Temporal Segmentation                            │
-│    → Identify swing phases:                         │
-│      - Address: [0, t1]                             │
-│      - Backswing: [t1, t2]                          │
-│      - Downswing: [t2, t3]                          │
-│      - Impact: [t3, t4]                             │
-│      - Follow-through: [t4, T]                      │
+│ 4. 时序分割                                           │
+│    → 识别挥杆阶段:                                     │
+│      - 准备 (Address): [0, t1]                        │
+│      - 上杆 (Backswing): [t1, t2]                     │
+│      - 下杆 (Downswing): [t2, t3]                     │
+│      - 击球 (Impact): [t3, t4]                        │
+│      - 送杆 (Follow-through): [t4, T]                 │
 └─────────────────────────────────────────────────────┘
     ↓
 ┌─────────────────────────────────────────────────────┐
-│ Stage 2: MuJoCo Physics Simulation (20s)            │
+│ 阶段 2：MuJoCo 物理仿真（约20秒）                     │
 ├─────────────────────────────────────────────────────┤
-│ 1. Load Model                                        │
-│    → humanoid_golf.xml (26 DOF + club)              │
+│ 1. 加载模型                                          │
+│    → humanoid_golf.xml（26 DOF + 球杆）               │
 │                                                      │
-│ 2. Trajectory Smoothing                             │
-│    → Savitzky-Golay filter                          │
-│    → Remove jitter from AI predictions              │
+│ 2. 轨迹平滑                                          │
+│    → Savitzky-Golay 滤波器                            │
+│    → 消除 AI 预测抖动                                  │
 │                                                      │
-│ 3. Mocap-Driven Simulation                          │
-│    for t in timesteps:                              │
-│        data.mocap_pos = trajectory[t]               │
-│        mujoco.mj_step(model, data)                  │
+│ 3. Mocap 驱动仿真                                     │
+│    for t in timesteps:                               │
+│        data.mocap_pos = trajectory[t]                │
+│        mujoco.mj_step(model, data)                   │
 │                                                      │
-│ 4. Inverse Dynamics                                 │
-│    mujoco.mj_inverse(model, data)                   │
-│    → Compute required joint torques                 │
+│ 4. 逆动力学                                          │
+│    mujoco.mj_inverse(model, data)                    │
+│    → 计算所需关节力矩                                  │
 │                                                      │
-│ 5. Physics Data Extraction                          │
-│    → Joint torques (26 × T)                         │
-│    → Joint velocities                               │
-│    → Contact forces (feet-ground)                   │
-│    → Club head velocity                             │
-│    → Center of pressure                             │
+│ 5. 物理数据提取                                       │
+│    → 关节力矩 (26 × T)                               │
+│    → 关节速度                                         │
+│    → 接触力（足-地）                                   │
+│    → 杆头速度                                         │
+│    → 压力中心                                         │
 └─────────────────────────────────────────────────────┘
     ↓
 ┌─────────────────────────────────────────────────────┐
-│ Stage 3: Biomechanics Analysis (10s)                │
+│ 阶段 3：生物力学分析（约10秒）                         │
 ├─────────────────────────────────────────────────────┤
-│ 1. Kinetic Chain Analysis                           │
-│    → Energy transfer efficiency:                    │
-│      Legs → Hips → Torso → Shoulders → Arms → Club │
-│    → Identify bottlenecks                           │
+│ 1. 动力链分析                                         │
+│    → 能量传递效率:                                     │
+│      腿 → 髋 → 躯干 → 肩 → 手臂 → 球杆               │
+│    → 识别瓶颈                                         │
 │                                                      │
-│ 2. X-Factor Computation                             │
-│    → Shoulder-hip separation angle                  │
-│    → Optimal range: 45-55°                          │
+│ 2. X-Factor 计算                                      │
+│    → 肩髋分离角                                       │
+│    → 最优范围: 45-55°                                 │
 │                                                      │
-│ 3. Ground Reaction Force Analysis                   │
-│    → Left/right foot forces                         │
-│    → Weight shift timing                            │
-│    → Vertical impulse                               │
+│ 3. 地面反作用力分析                                    │
+│    → 左/右脚力                                        │
+│    → 重心转移时机                                      │
+│    → 垂直冲量                                         │
 │                                                      │
-│ 4. Club Metrics                                     │
-│    → Club head speed at impact                      │
-│    → Attack angle                                   │
-│    → Face angle                                     │
-│    → Swing path                                     │
+│ 4. 球杆指标                                           │
+│    → 击球瞬间杆头速度                                  │
+│    → 攻角                                             │
+│    → 杆面角度                                         │
+│    → 挥杆路径                                         │
 │                                                      │
-│ 5. Balance & Stability                              │
-│    → COP trajectory                                 │
-│    → Sway/drift analysis                            │
-│    → Stability score                                │
+│ 5. 平衡与稳定性                                       │
+│    → 压力中心轨迹                                      │
+│    → 晃动/漂移分析                                     │
+│    → 稳定性评分                                       │
 └─────────────────────────────────────────────────────┘
     ↓
 ┌─────────────────────────────────────────────────────┐
-│ Stage 4: Optimization & Suggestions (15s)           │
+│ 阶段 4：优化与建议（约15秒）                           │
 ├─────────────────────────────────────────────────────┤
-│ 1. Load RL Policy (Optional)                        │
-│    → Pre-trained PPO model                          │
-│    → Generate optimal trajectory                    │
+│ 1. 加载 RL 策略（可选）                                │
+│    → 预训练 PPO 模型                                   │
+│    → 生成最优轨迹                                      │
 │                                                      │
-│ 2. Comparative Analysis                             │
-│    → User vs Pro database                           │
-│    → User vs RL optimal                             │
+│ 2. 对比分析                                           │
+│    → 用户 vs 职业选手数据库                             │
+│    → 用户 vs RL 最优策略                               │
 │                                                      │
-│ 3. Generate Suggestions                             │
-│    if energy_efficiency['hips'] < 0.7:              │
-│        suggest("Increase hip rotation by 15°")      │
-│    if x_factor < 40:                                │
-│        suggest("Create more shoulder-hip separation")│
-│    if balance_score < 70:                           │
-│        suggest("Improve weight transfer timing")    │
+│ 3. 生成建议                                           │
+│    if energy_efficiency['hips'] < 0.7:               │
+│        suggest("增加髋部旋转 15°")                     │
+│    if x_factor < 40:                                 │
+│        suggest("增大肩髋分离角")                       │
+│    if balance_score < 70:                            │
+│        suggest("改善重心转移时机")                      │
 │                                                      │
-│ 4. Render Visualizations                            │
-│    → Annotated video (skeleton overlay)             │
-│    → MuJoCo simulation video                        │
-│    → Charts: speed curves, torque heatmaps          │
-│    → Comparison animations                          │
+│ 4. 渲染可视化                                         │
+│    → 标注视频（骨骼叠加）                               │
+│    → MuJoCo 仿真视频                                  │
+│    → 图表: 速度曲线、力矩热力图                         │
+│    → 对比动画                                         │
 └─────────────────────────────────────────────────────┘
     ↓
-Return Complete Analysis Report
+返回完整分析报告
 ```
 
-### 2.2 Module Architecture
+### 2.2 模块架构
 
-#### AI Vision Module
+#### AI 视觉模块
 
 ```python
 class PoseEstimator:
-    """3D pose estimation from monocular video"""
+    """单目视频 3D 姿态估计"""
 
     def __init__(self):
         self.detector_2d = MediaPipePose()
-        self.lifter_3d = VideoPose3D()  # trained model
+        self.lifter_3d = VideoPose3D()  # 预训练模型
 
     def process(self, video_path):
-        # Extract frames
+        # 提取视频帧
         frames = load_video(video_path)
 
-        # 2D detection
+        # 2D 检测
         poses_2d = []
         for frame in frames:
             keypoints_2d = self.detector_2d.detect(frame)
             poses_2d.append(keypoints_2d)
 
-        # 3D lifting
+        # 3D 提升
         poses_3d = self.lifter_3d.predict(poses_2d)
 
         return {
@@ -264,17 +263,17 @@ class PoseEstimator:
 
 
 class ClubTracker:
-    """Golf club detection and tracking"""
+    """球杆检测与追踪"""
 
     def __init__(self):
         self.model = YOLO('yolov8n.pt')
         self.tracker = ByteTrack()
 
     def track(self, video_path):
-        # Detect club in each frame
+        # 逐帧检测球杆
         detections = self.model(video_path, classes=['golf_club'])
 
-        # Track across frames
+        # 跨帧追踪
         trajectories = self.tracker.update(detections)
 
         return {
@@ -283,29 +282,29 @@ class ClubTracker:
         }
 ```
 
-#### MuJoCo Simulation Module
+#### MuJoCo 仿真模块
 
 ```python
 class GolfSwingSimulator:
-    """MuJoCo-based physics simulation"""
+    """基于 MuJoCo 的物理仿真"""
 
     def __init__(self, model_path='assets/mjcf/humanoid_golf.xml'):
         self.model = mujoco.MjModel.from_xml_path(model_path)
         self.data = mujoco.MjData(self.model)
 
     def replay_trajectory(self, joint_trajectory):
-        """Mocap-driven simulation"""
+        """Mocap 驱动仿真"""
         physics_data = []
 
         for t, qpos in enumerate(joint_trajectory):
-            # Set mocap targets
+            # 设置 mocap 目标
             self.data.mocap_pos[:17] = qpos
 
-            # Forward kinematics + inverse dynamics
+            # 正向运动学 + 逆动力学
             mujoco.mj_step(self.model, self.data)
             mujoco.mj_inverse(self.model, self.data)
 
-            # Record physics state
+            # 记录物理状态
             physics_data.append({
                 'time': t * self.model.opt.timestep,
                 'qpos': self.data.qpos.copy(),
@@ -318,7 +317,7 @@ class GolfSwingSimulator:
         return physics_data
 
     def analyze_kinetic_chain(self, physics_data):
-        """Compute energy transfer efficiency"""
+        """计算能量传递效率"""
         segments = ['legs', 'pelvis', 'torso', 'shoulders', 'arms', 'club']
         energy = {}
 
@@ -327,7 +326,7 @@ class GolfSwingSimulator:
             RE = compute_rotational_energy(physics_data, seg)
             energy[seg] = KE + RE
 
-        # Energy transfer ratios
+        # 能量传递比
         efficiency = {}
         for i in range(len(segments) - 1):
             ratio = energy[segments[i+1]] / energy[segments[i]]
@@ -337,7 +336,7 @@ class GolfSwingSimulator:
 
 
 class PhysicsAnalyzer:
-    """Biomechanics metrics computation"""
+    """生物力学指标计算"""
 
     def compute_x_factor(self, data):
         shoulder_angle = get_rotation(data, 'torso')
@@ -358,7 +357,7 @@ class PhysicsAnalyzer:
         club_head_vel = get_site_velocity(data, 'club_head')
         speed = np.linalg.norm(club_head_vel)
 
-        # Convert to mph
+        # 转换为英里/小时
         speed_mph = speed * 2.23694
 
         return {
@@ -368,45 +367,45 @@ class PhysicsAnalyzer:
         }
 ```
 
-#### RL Optimization Module (Advanced)
+#### RL 优化模块（高级功能）
 
 ```python
 class GolfSwingEnv(gym.Env):
-    """Reinforcement learning environment"""
+    """强化学习环境"""
 
     def __init__(self):
         self.model = mujoco.MjModel.from_xml_path('humanoid_golf.xml')
         self.data = mujoco.MjData(self.model)
 
-        # Observation: joint angles, velocities, club position
+        # 观测空间: 关节角度、速度、球杆位置
         self.observation_space = gym.spaces.Box(-np.inf, np.inf, (78,))
 
-        # Action: joint torques
+        # 动作空间: 关节力矩
         self.action_space = gym.spaces.Box(-1, 1, (26,))
 
     def step(self, action):
-        # Apply torques
+        # 施加力矩
         self.data.ctrl[:] = action * 100
 
-        # Simulate
+        # 仿真一步
         mujoco.mj_step(self.model, self.data)
 
-        # Compute reward
+        # 计算奖励
         club_speed = compute_club_head_speed(self.data)
         balance = compute_balance_score(self.data)
         energy_eff = compute_energy_efficiency(self.data)
 
         reward = (
-            0.5 * normalize(club_speed, 0, 130) +  # Speed: 0-130 mph
-            0.3 * balance +                         # Balance: 0-1
-            0.2 * energy_eff                        # Efficiency: 0-1
+            0.5 * normalize(club_speed, 0, 130) +  # 速度: 0-130 mph
+            0.3 * balance +                         # 平衡: 0-1
+            0.2 * energy_eff                        # 效率: 0-1
         )
 
         return self.get_obs(), reward, done, {}
 
 
 def train_virtual_coach():
-    """Train RL policy for optimal swing"""
+    """训练最优挥杆 RL 策略"""
     env = GolfSwingEnv()
     model = PPO("MlpPolicy", env, verbose=1)
     model.learn(total_timesteps=1_000_000)
@@ -414,19 +413,19 @@ def train_virtual_coach():
     return model
 ```
 
-### 2.3 Data Models
+### 2.3 数据模型
 
 ```python
-# Pydantic models for API
+# Pydantic API 数据模型
 
 class PoseData(BaseModel):
-    """3D pose estimation output"""
+    """3D 姿态估计输出"""
     joints_3d: List[List[float]]  # (T, 17, 3)
     confidence: List[float]
     swing_phases: Dict[str, Tuple[int, int]]
 
 class PhysicsMetrics(BaseModel):
-    """MuJoCo analysis output"""
+    """MuJoCo 分析输出"""
     club_head_speed_mph: float
     peak_torques: Dict[str, float]
     energy_efficiency: Dict[str, float]
@@ -435,14 +434,14 @@ class PhysicsMetrics(BaseModel):
     balance_score: float
 
 class SwingSuggestion(BaseModel):
-    """Optimization suggestion"""
-    category: str  # "hip_rotation", "weight_transfer", etc.
+    """优化建议"""
+    category: str  # "hip_rotation", "weight_transfer" 等
     severity: str  # "minor", "moderate", "major"
     message: str
-    improvement_potential: float  # Estimated gain in mph
+    improvement_potential: float  # 预估速度提升（mph）
 
 class AnalysisResult(BaseModel):
-    """Complete analysis output"""
+    """完整分析结果"""
     video_id: str
     analysis_id: str
     pose_data: PoseData
@@ -452,17 +451,17 @@ class AnalysisResult(BaseModel):
     processing_time: float
 ```
 
-### 2.4 API Endpoints
+### 2.4 API 端点
 
 ```
-# Phase 2 API extensions
+# Phase 2 API 扩展
 
 POST /api/video/analyze/{video_id}
-    Request: { "video_id": "uuid" }
-    Response: { "analysis_id": "uuid", "status": "queued" }
+    请求: { "video_id": "uuid" }
+    响应: { "analysis_id": "uuid", "status": "queued" }
 
 GET /api/analysis/status/{analysis_id}
-    Response: {
+    响应: {
         "analysis_id": "uuid",
         "status": "processing" | "completed" | "failed",
         "progress": 0-100,
@@ -470,7 +469,7 @@ GET /api/analysis/status/{analysis_id}
     }
 
 GET /api/analysis/result/{analysis_id}
-    Response: {
+    响应: {
         "analysis_id": "uuid",
         "physics_metrics": { ... },
         "suggestions": [ ... ],
@@ -483,131 +482,131 @@ GET /api/analysis/result/{analysis_id}
 
 GET /api/analysis/visualization/{analysis_id}/{resource}
     resource: "annotated_video" | "simulation_video" | "speed_chart" | "torque_heatmap"
-    Response: File download
+    响应: 文件下载
 
 WebSocket /ws/analysis/{analysis_id}
-    Real-time progress updates
+    实时进度推送
 ```
 
-### 2.5 Async Processing Architecture
+### 2.5 异步处理架构
 
 ```
-FastAPI Endpoint
+FastAPI 端点
     ↓
-Celery Task Queue (Redis)
+Celery 任务队列 (Redis)
     ↓
-Worker Pool (GPU-enabled)
+Worker 池（GPU）
     ↓
-[Task 1] Pose Estimation
-[Task 2] MuJoCo Simulation
-[Task 3] Visualization Rendering
+[任务 1] 姿态估计
+[任务 2] MuJoCo 仿真
+[任务 3] 可视化渲染
     ↓
-Results stored in Redis
+结果存储至 Redis
     ↓
-WebSocket notification to client
+WebSocket 通知客户端
 ```
 
-## Performance Considerations
+## 性能考量
 
-### Bottlenecks & Solutions
+### 瓶颈与解决方案
 
-| Bottleneck | Solution |
-|-----------|----------|
-| Pose estimation (GPU) | Batch processing, model quantization |
-| MuJoCo simulation (CPU) | Parallel workers, C++ optimization |
-| Video rendering | FFmpeg GPU encoding, pre-computed templates |
-| Large model files | Lazy loading, cloud storage |
+| 瓶颈 | 解决方案 |
+|------|---------|
+| 姿态估计（GPU） | 批处理、模型量化 |
+| MuJoCo 仿真（CPU） | 并行 Worker、C++ 优化 |
+| 视频渲染 | FFmpeg GPU 编码、预计算模板 |
+| 大模型文件 | 懒加载、云存储 |
 
-### Target Performance Metrics
+### 目标性能指标
 
-| Metric | Target |
-|--------|--------|
-| Total processing time | < 90 seconds |
-| Pose estimation | < 30 seconds |
-| MuJoCo simulation | < 20 seconds |
-| Analysis + rendering | < 30 seconds |
-| Concurrent users | 10+ (with async queue) |
+| 指标 | 目标 |
+|------|------|
+| 总处理时间 | < 90 秒 |
+| 姿态估计 | < 30 秒 |
+| MuJoCo 仿真 | < 20 秒 |
+| 分析 + 渲染 | < 30 秒 |
+| 并发用户 | 10+（使用异步队列） |
 
-## Deployment Architecture
+## 部署架构
 
 ```
 ┌─────────────────────┐
-│   Load Balancer     │
-│    (Nginx)          │
+│   负载均衡            │
+│    (Nginx)           │
 └──────────┬──────────┘
            │
     ┌──────┴──────┐
     │             │
 ┌───▼────┐   ┌───▼────┐
-│FastAPI │   │FastAPI │  (Multiple instances)
+│FastAPI │   │FastAPI │  （多实例）
 │Worker 1│   │Worker 2│
 └───┬────┘   └───┬────┘
     │             │
     └──────┬──────┘
            │
     ┌──────▼──────────┐
-    │  Celery Broker  │
-    │    (Redis)      │
+    │  Celery Broker   │
+    │    (Redis)       │
     └──────┬──────────┘
            │
     ┌──────┴──────┐
     │             │
 ┌───▼────┐   ┌───▼────┐
-│Celery  │   │Celery  │  (GPU workers)
+│Celery  │   │Celery  │  （GPU Worker）
 │Worker 1│   │Worker 2│
 └───┬────┘   └───┬────┘
     │             │
     └──────┬──────┘
            │
     ┌──────▼──────┐
-    │  Storage    │
+    │  存储        │
     │  (S3/OSS)   │
     └─────────────┘
 ```
 
-## Security & Privacy
+## 安全与隐私
 
-- Video files encrypted at rest
-- UUID-based access control
-- Rate limiting on API endpoints
-- User authentication (Phase 2)
-- HTTPS enforced in production
-- Video auto-deletion after 30 days
+- 视频文件静态加密
+- 基于 UUID 的访问控制
+- API 端点限流
+- 用户认证（Phase 2）
+- 生产环境强制 HTTPS
+- 视频 30 天自动删除
 
-## Monitoring & Logging
+## 监控与日志
 
 ```python
-# Structured logging
+# 结构化日志
 logger.info("analysis_started", extra={
     "video_id": video_id,
     "analysis_id": analysis_id,
     "file_size_mb": file_size
 })
 
-# Metrics collection
+# 指标采集
 metrics.timing("pose_estimation.duration", duration)
 metrics.increment("analysis.completed")
 metrics.gauge("queue.depth", queue_size)
 
-# Error tracking
+# 错误追踪
 sentry.capture_exception(error, context={
     "video_id": video_id,
     "stage": "mujoco_simulation"
 })
 ```
 
-## Future Enhancements
+## 未来扩展
 
-- Multi-camera support (stereo depth)
-- Real-time analysis (edge deployment)
-- Comparison with pro database
-- Progressive training plans
-- AR overlay in WeChat mini program
-- Multiplayer challenges/competitions
+- 多摄像头支持（双目深度）
+- 实时分析（边缘部署）
+- 职业选手数据库对比
+- 渐进式训练计划
+- 微信小程序 AR 叠加
+- 多人挑战/竞赛
 
-## References
+## 参考资料
 
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [MuJoCo Python Bindings](https://mujoco.readthedocs.io/)
-- [Celery Documentation](https://docs.celeryq.dev/)
-- [VideoPose3D Paper](https://arxiv.org/abs/1811.11742)
+- [FastAPI 文档](https://fastapi.tiangolo.com/)
+- [MuJoCo Python 绑定](https://mujoco.readthedocs.io/)
+- [Celery 文档](https://docs.celeryq.dev/)
+- [VideoPose3D 论文](https://arxiv.org/abs/1811.11742)
