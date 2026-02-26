@@ -54,6 +54,7 @@ Page({
       url: `${config.API_BASE}/api/video/upload`,
       filePath: this.data.videoPath,
       name: 'video',
+      header: config.authHeader(),
       success: (res) => {
         console.log('=== Upload SUCCESS ===')
         console.log('Status code:', res.statusCode)
@@ -114,6 +115,7 @@ Page({
       wx.request({
         url: statusUrl,
         method: 'GET',
+        header: config.authHeader(),
         success: (res) => {
           console.log('=== Status response ===')
           console.log('Status code:', res.statusCode)

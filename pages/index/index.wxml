@@ -13,65 +13,86 @@
       </view>
     </view>
 
-    <!-- History list -->
-    <scroll-view class="history-scroll" scroll-y enhanced show-scrollbar="{{false}}">
-      <view class="section-header">
-        <text class="section-title">挥杆记录</text>
-        <text class="section-count" wx:if="{{history.length > 0}}">共 {{history.length}} 次</text>
-      </view>
-
-      <!-- Empty state -->
-      <view wx:if="{{history.length === 0}}" class="empty-state">
-        <text class="empty-icon">⛳</text>
-        <text class="empty-title">暂无挥杆记录</text>
-        <text class="empty-desc">录制或选取视频，AI 将解析你的挥杆动作并提供专业改进建议</text>
-      </view>
-
-      <!-- History cards -->
-      <view
-        wx:for="{{history}}"
-        wx:key="id"
-        class="history-card"
-        bindtap="viewResult"
-        data-id="{{item.id}}"
-      >
-        <view class="card-index-wrap">
-          <text class="card-index">{{history.length - index}}</text>
-        </view>
-        <view class="card-body">
-          <text class="card-date">{{item.dateFormatted}}</text>
-          <view class="card-metrics" wx:if="{{item.metrics}}">
-            <text class="card-metric">{{item.metrics.clubHeadSpeed}} mph</text>
-            <text class="card-sep"> · </text>
-            <text class="card-metric">平衡 {{item.metrics.balanceScore}} 分</text>
-          </view>
-          <text class="card-metric card-no-data" wx:else>分析数据不可用</text>
-        </view>
-        <text class="card-arrow">›</text>
-      </view>
-
-      <view style="height: 24rpx;"></view>
-    </scroll-view>
-
-    <!-- Action bar -->
-    <view class="action-bar">
-      <button class="btn-record" bindtap="startRecord">新录像</button>
-      <button class="btn-album" bindtap="chooseAlbum">从相册选取</button>
+    <!-- Not logged in: prompt -->
+    <view wx:if="{{!loggedIn}}" class="login-prompt">
+      <text class="empty-icon">⛳</text>
+      <text class="empty-title">欢迎使用 Golf AI</text>
+      <text class="empty-desc">登录后即可录制视频，获取 AI 挥杆分析与专业改进建议</text>
+      <button class="btn-login" bindtap="doLogin">微信登录</button>
     </view>
+
+    <!-- Logged in: history + actions -->
+    <block wx:else>
+      <scroll-view class="history-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+        <view class="section-header">
+          <text class="section-title">挥杆记录</text>
+          <text class="section-count" wx:if="{{history.length > 0}}">共 {{history.length}} 次</text>
+        </view>
+
+        <!-- Empty state -->
+        <view wx:if="{{history.length === 0}}" class="empty-state">
+          <text class="empty-icon">⛳</text>
+          <text class="empty-title">暂无挥杆记录</text>
+          <text class="empty-desc">录制或选取视频，AI 将解析你的挥杆动作并提供专业改进建议</text>
+        </view>
+
+        <!-- History cards -->
+        <view
+          wx:for="{{history}}"
+          wx:key="id"
+          class="history-card"
+          bindtap="viewResult"
+          data-id="{{item.id}}"
+        >
+          <view class="card-index-wrap">
+            <text class="card-index">{{history.length - index}}</text>
+          </view>
+          <view class="card-body">
+            <text class="card-date">{{item.dateFormatted}}</text>
+            <view class="card-metrics" wx:if="{{item.metrics}}">
+              <text class="card-metric">{{item.metrics.clubHeadSpeed}} mph</text>
+              <text class="card-sep"> · </text>
+              <text class="card-metric">平衡 {{item.metrics.balanceScore}} 分</text>
+            </view>
+            <text class="card-metric card-no-data" wx:else>分析数据不可用</text>
+          </view>
+          <text class="card-arrow">›</text>
+        </view>
+
+        <view style="height: 24rpx;"></view>
+      </scroll-view>
+
+      <!-- Action bar -->
+      <view class="action-bar">
+        <button class="btn-record" bindtap="startRecord">新录像</button>
+        <button class="btn-album" bindtap="chooseAlbum">从相册选取</button>
+      </view>
+    </block>
 
   </view>
 
   <!-- ========== PROFILE TAB ========== -->
   <view wx:if="{{activeTab === 1}}" class="profile-wrap">
     <view class="profile-hero" style="padding-top: {{statusBarHeight}}px;">
-      <view class="avatar"><text class="avatar-text">G</text></view>
-      <text class="profile-name">高尔夫爱好者</text>
-      <view class="profile-stat-row">
-        <view class="profile-stat">
-          <text class="stat-num">{{history.length}}</text>
-          <text class="stat-label">次分析</text>
+      <!-- Not logged in -->
+      <block wx:if="{{!loggedIn}}">
+        <view class="avatar"><text class="avatar-text">?</text></view>
+        <text class="profile-name">未登录</text>
+        <button class="btn-login-small" bindtap="doLogin">微信登录</button>
+      </block>
+      <!-- Logged in -->
+      <block wx:else>
+        <image wx:if="{{avatarUrl}}" class="avatar" src="{{avatarUrl}}" mode="aspectFill" />
+        <view wx:else class="avatar"><text class="avatar-text">{{nickname[0] || 'G'}}</text></view>
+        <text class="profile-name">{{nickname}}</text>
+        <text wx:if="{{role}}" class="profile-role">{{role}}</text>
+        <view class="profile-stat-row">
+          <view class="profile-stat">
+            <text class="stat-num">{{history.length}}</text>
+            <text class="stat-label">次分析</text>
+          </view>
         </view>
-      </view>
+      </block>
     </view>
 
     <scroll-view class="profile-scroll" scroll-y enhanced show-scrollbar="{{false}}">
@@ -87,9 +108,14 @@
         </view>
       </view>
 
-      <view class="settings-group">
+      <view class="settings-group" wx:if="{{loggedIn}}">
         <view class="settings-row" bindtap="clearHistory">
           <text class="row-label danger">清除所有挥杆记录</text>
+          <text class="row-arrow">›</text>
+        </view>
+        <view class="row-divider"></view>
+        <view class="settings-row" bindtap="logout">
+          <text class="row-label danger">退出登录</text>
           <text class="row-arrow">›</text>
         </view>
       </view>

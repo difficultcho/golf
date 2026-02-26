@@ -125,6 +125,67 @@ page {
   line-height: 1.7;
 }
 
+/* Login prompt (home tab, not logged in) */
+.login-prompt {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 60rpx;
+}
+
+.btn-login {
+  margin-top: 48rpx;
+  width: 400rpx;
+  height: 96rpx;
+  line-height: normal;
+  background-color: #07c160;
+  color: #ffffff;
+  border-radius: 48rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-login:active {
+  background-color: #06ad56;
+}
+
+/* Login button (profile tab, smaller) */
+.btn-login-small {
+  margin-top: 16rpx;
+  width: 240rpx;
+  height: 72rpx;
+  line-height: normal;
+  background-color: #07c160;
+  color: #ffffff;
+  border-radius: 36rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-login-small:active {
+  background-color: #06ad56;
+}
+
+/* Role badge */
+.profile-role {
+  font-size: 22rpx;
+  color: #07c160;
+  background-color: rgba(7, 193, 96, 0.15);
+  padding: 4rpx 16rpx;
+  border-radius: 16rpx;
+  margin-bottom: 16rpx;
+}
+
 /* History card */
 .history-card {
   display: flex;

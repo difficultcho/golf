@@ -35,3 +35,4 @@ data/visualizations/*
 .pytest_cache/
 .coverage
 htmlcov/
+MUJOCO_LOG.TXT

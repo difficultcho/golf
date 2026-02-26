@@ -27,18 +27,33 @@ Page({
       return
     }
 
-    const videoUrl = `${config.API_BASE}/api/video/result/${videoId}`
-
     console.log('Video ID:', videoId)
-    console.log('Video URL:', videoUrl)
 
-    this.setData({
-      videoId,
-      videoUrl
-    })
+    this.setData({ videoId })
 
-    // Load metadata
+    // Download video with auth header, then set local path as src
+    this.loadVideo(videoId)
     this.loadMetadata()
+  },
+
+  loadVideo(videoId) {
+    const remoteUrl = `${config.API_BASE}/api/video/result/${videoId}`
+    wx.downloadFile({
+      url: remoteUrl,
+      header: config.authHeader(),
+      success: (res) => {
+        if (res.statusCode === 200) {
+          this.setData({ videoUrl: res.tempFilePath })
+        } else {
+          console.error('Video download failed:', res.statusCode)
+          this.setData({ videoError: '视频加载失败', videoLoading: false })
+        }
+      },
+      fail: (err) => {
+        console.error('Video download error:', err)
+        this.setData({ videoError: '视频下载失败', videoLoading: false })
+      }
+    })
   },
 
   onVideoLoaded() {
@@ -71,6 +86,7 @@ Page({
     wx.request({
       url: `${config.API_BASE}/api/video/data/${this.data.videoId}`,
       method: 'GET',
+      header: config.authHeader(),
       success: (res) => {
         console.log('Metadata response:', res)
 
@@ -375,6 +391,7 @@ Page({
 
     wx.downloadFile({
       url: this.data.videoUrl,
+      header: config.authHeader(),
       success: (res) => {
         if (res.statusCode === 200) {
           wx.getSetting({

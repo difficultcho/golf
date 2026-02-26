@@ -12,4 +12,16 @@ const config = {
   }
 }
 
-module.exports = config[ENV]
+const current = config[ENV]
+
+/**
+ * Get Authorization header with current token.
+ * Usage: header: config.authHeader()
+ */
+current.authHeader = function () {
+  const app = getApp()
+  const token = app ? app.getToken() : ''
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
+module.exports = current

@@ -3,7 +3,11 @@ Page({
   data: {
     activeTab: 0,
     history: [],
-    statusBarHeight: 44
+    statusBarHeight: 44,
+    loggedIn: false,
+    nickname: '',
+    role: '',
+    avatarUrl: ''
   },
 
   onLoad() {
@@ -12,7 +16,26 @@ Page({
   },
 
   onShow() {
-    this.loadHistory()
+    const app = getApp()
+    const loggedIn = app.isLoggedIn()
+    this.setData({ loggedIn })
+
+    if (loggedIn) {
+      this.loadHistory()
+      this.loadUserInfo()
+    }
+  },
+
+  loadUserInfo() {
+    const app = getApp()
+    const info = app.globalData.userInfo
+    if (info) {
+      this.setData({
+        nickname: info.nickname,
+        role: info.role === 'coach' ? '教练' : info.role === 'admin' ? '管理员' : '',
+        avatarUrl: info.avatar_url || ''
+      })
+    }
   },
 
   loadHistory() {
@@ -27,6 +50,22 @@ Page({
   switchTab(e) {
     const tab = parseInt(e.currentTarget.dataset.tab, 10)
     this.setData({ activeTab: tab })
+  },
+
+  doLogin() {
+    const app = getApp()
+    wx.showLoading({ title: '登录中...' })
+    app.login((success) => {
+      wx.hideLoading()
+      if (success) {
+        this.setData({ loggedIn: true })
+        this.loadHistory()
+        this.loadUserInfo()
+        wx.showToast({ title: '登录成功', icon: 'success' })
+      } else {
+        wx.showToast({ title: '登录失败，请重试', icon: 'none' })
+      }
+    })
   },
 
   startRecord() {
@@ -81,5 +120,22 @@ Page({
 
   sendFeedback() {
     wx.showToast({ title: '敬请期待', icon: 'none' })
+  },
+
+  logout() {
+    wx.showModal({
+      title: '退出登录',
+      content: '退出后需要重新使用微信身份登录，确定退出？',
+      confirmText: '退出',
+      confirmColor: '#e74c3c',
+      success: (res) => {
+        if (res.confirm) {
+          const app = getApp()
+          app.logout()
+          this.setData({ loggedIn: false, nickname: '', role: '', avatarUrl: '', activeTab: 0 })
+          wx.showToast({ title: '已退出', icon: 'success' })
+        }
+      }
+    })
   }
 })
