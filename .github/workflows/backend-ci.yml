@@ -53,6 +53,19 @@ jobs:
     if: github.event_name == 'push'
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Sync docker-compose.yml to CVM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.CVM_HOST }}
+          username: ${{ secrets.CVM_USERNAME }}
+          key: ${{ secrets.CVM_SSH_KEY }}
+          source: "backend/docker-compose.yml"
+          target: "/opt/golf-backend"
+          strip_components: 1
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
