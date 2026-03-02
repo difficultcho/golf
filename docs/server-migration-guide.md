@@ -53,7 +53,7 @@ EOF
 ### 1.5 登录 TCR 并启动服务
 
 ```bash
-sudo docker login ccr.ccs.tencentyun.com -u <TCR用户名> -p <TCR密码 tencent1>
+sudo docker login ccr.ccs.tencentyun.com -u <TCR用户名> -p <TCR密码 100007334052/tencent1>
 cd /opt/golf-backend && sudo docker compose up -d
 ```
 
