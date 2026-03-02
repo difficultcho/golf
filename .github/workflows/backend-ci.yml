@@ -76,5 +76,6 @@ jobs:
             docker login ccr.ccs.tencentyun.com -u ${{ secrets.TCR_USERNAME }} -p ${{ secrets.TCR_PASSWORD }}
             docker pull ccr.ccs.tencentyun.com/mz_personal_namespace/golf_backend:latest
             cd /opt/golf-backend
+            docker compose pull
             docker compose up -d
             docker image prune -f
