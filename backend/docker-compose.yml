@@ -22,7 +22,7 @@ services:
         condition: service_healthy
 
   mysql:
-    image: mysql:8.0
+    image: ccr.ccs.tencentyun.com/library/mysql:8.0
     container_name: golf-mysql
     restart: unless-stopped
     ports:
