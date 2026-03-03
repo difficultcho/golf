@@ -57,14 +57,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Sync docker-compose.yml to CVM
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.CVM_HOST }}
-          username: ${{ secrets.CVM_USERNAME }}
-          key: ${{ secrets.CVM_SSH_KEY }}
-          source: "backend/docker-compose.yml"
-          target: "/opt/golf-backend"
-          strip_components: 1
+        env:
+          SSH_KEY: ${{ secrets.CVM_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key backend/docker-compose.yml ${{ secrets.CVM_USERNAME }}@${{ secrets.CVM_HOST }}:/opt/golf-backend/docker-compose.yml
+          rm ~/.ssh/deploy_key
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
