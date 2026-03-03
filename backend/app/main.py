@@ -18,7 +18,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     description="AI-Driven Golf Swing Analysis API with PyTorch + MuJoCo backend. Deployed via CI/CD pipeline.",
-    version="2.2.0",
+    version="2.3.0",
     debug=settings.DEBUG,
     lifespan=lifespan,
 )
