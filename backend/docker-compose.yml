@@ -3,13 +3,12 @@ services:
     image: ccr.ccs.tencentyun.com/mz_personal_namespace/golf_backend:latest
     container_name: golf-backend
     restart: unless-stopped
-    ports:
-      - "8000:8000"
+    network_mode: host
     volumes:
       - ./data:/app/data
     environment:
       - TZ=Asia/Shanghai
-      - MYSQL_HOST=mysql
+      - MYSQL_HOST=127.0.0.1
       - MYSQL_PORT=3306
       - MYSQL_USER=golf
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
