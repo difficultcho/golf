@@ -11,10 +11,16 @@ Page({
     videoLoading: true,
     videoError: '',
     activeTab: 0,
-    chartsDrawn: false
+    chartsDrawn: false,
+    scrollHeight: 0
   },
 
   onLoad(options) {
+    const { windowHeight, statusBarHeight } = wx.getWindowInfo()
+    const menuRect = wx.getMenuButtonBoundingClientRect()
+    const navBarHeight = (menuRect.top - statusBarHeight) * 2 + menuRect.height + statusBarHeight
+    this.setData({ scrollHeight: windowHeight - navBarHeight })
+
     const videoId = options.videoId
     if (!videoId) {
       wx.showToast({
@@ -129,7 +135,7 @@ Page({
           }
           const suggestions = this.generateSuggestions(rawMetrics)
           this.setData({ metadata: data, rawMetrics, suggestions })
-          this.saveToHistory(videoId, rawMetrics)
+          this.saveToHistory(this.data.videoId, rawMetrics)
         } else {
           wx.showToast({
             title: '元数据加载失败',

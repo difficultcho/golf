@@ -5,7 +5,8 @@ Page({
     recording: false,
     recordTime: 0,
     maxRecordTime: 60, // Maximum 60 seconds
-    timer: null
+    timer: null,
+    cameraPosition: 'back'
   },
 
   onLoad() {
@@ -90,6 +91,13 @@ Page({
     }, 1000)
 
     this.setData({ timer })
+  },
+
+  flipCamera() {
+    if (this.data.recording) return
+    this.setData({
+      cameraPosition: this.data.cameraPosition === 'back' ? 'front' : 'back'
+    })
   },
 
   retake() {

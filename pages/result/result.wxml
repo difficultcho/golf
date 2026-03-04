@@ -1,6 +1,6 @@
 <!--result.wxml-->
-<navigation-bar title="处理结果" back="{{true}}" color="black" background="#FFF"></navigation-bar>
-<scroll-view class="scrollarea" scroll-y type="list">
+<navigation-bar title="分析结果" back="{{true}}" color="black" background="#FFF"></navigation-bar>
+<scroll-view class="scrollarea" scroll-y enhanced style="height: {{scrollHeight}}px;">
   <view class="container">
     <!-- Video player -->
     <view class="video-container">

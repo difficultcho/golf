@@ -3,13 +3,17 @@
 <scroll-view class="scrollarea" scroll-y type="list">
   <view class="container">
     <!-- Camera preview (before recording or during recording) -->
-    <camera
-      wx:if="{{!videoPath}}"
-      class="camera"
-      device-position="back"
-      flash="off"
-      mode="video"
-    ></camera>
+    <view wx:if="{{!videoPath}}" class="camera-wrap">
+      <camera
+        class="camera"
+        device-position="{{cameraPosition}}"
+        flash="off"
+        mode="video"
+      ></camera>
+      <view class="btn-flip" bindtap="flipCamera" hover-class="btn-flip-active">
+        <text class="flip-icon">⟳</text>
+      </view>
+    </view>
 
     <!-- Video preview (after recording) -->
     <video

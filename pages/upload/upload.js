@@ -132,7 +132,9 @@ Page({
                 statusText: '分析完成！',
                 step: 2
               })
-              console.log('Success state set, data:', this.data)
+              setTimeout(() => {
+                this.viewResult()
+              }, 800)
             } else if (status === 'failed') {
               console.error('=== Processing FAILED ===')
               this.handleError('视频处理失败')

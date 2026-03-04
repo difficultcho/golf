@@ -68,7 +68,6 @@
   <!-- Action buttons -->
   <view class="action-wrap">
     <button wx:if="{{failed}}" class="btn-primary" bindtap="retryUpload">重新上传</button>
-    <button wx:if="{{success}}" class="btn-primary" bindtap="viewResult">查看分析结果</button>
   </view>
 
 </view>

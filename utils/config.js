@@ -1,7 +1,7 @@
 // API configuration for the backend server
 // Change this for production deployment
 
-const ENV = 'development'  // 'development' | 'production'
+const ENV = 'production'  // 'development' | 'production'
 
 const config = {
   development: {
